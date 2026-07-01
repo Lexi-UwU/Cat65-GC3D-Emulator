@@ -8,24 +8,22 @@ import org.kittykat.cat65.EmuHelper;
 import org.kittykat.cat65.core.CMU;
 import org.kittykat.cat65.ui.window.WindowWithTitle;
 
-// ToDo: update to emulate the 65c02 instead
-/**
- * Note: this is an emulator for the 6502 <b>not</b> the 65<u>C</u>02<br>
- * the 65C02 would have a few more instructions, and it forces all unused opcodes to be the same as $ea (NOP)
- **/
+@SuppressWarnings("unused")
 public class CPU extends WindowWithTitle {
     private final OpcodeType[] opcodeTypes = {
-            new OpcodeType(this::ADC, new OpcodeDef[]{
-                new OpcodeDef(this::value_imm,  2, new int[]{0x69}, null),
-                new OpcodeDef(this::value_zp,   3, new int[]{0x65}, null),
-                new OpcodeDef(this::value_zpX,  4, new int[]{0x75}, null),
-                new OpcodeDef(this::value_abs,  4, new int[]{0x6d}, null),
-                new OpcodeDef(this::value_absX, 4, new int[]{0x7d}, null),
-                new OpcodeDef(this::value_absY, 4, new int[]{0x79}, null),
-                new OpcodeDef(this::value_xInd, 6, new int[]{0x61}, null),
-                new OpcodeDef(this::value_indY, 5, new int[]{0x71}, null),
+            new OpcodeType(this::ADC, new OpcodeDef[] {
+                    new OpcodeDef(this::value_imm,  2, new int[]{0x69}, null),
+                    new OpcodeDef(this::value_zp,   3, new int[]{0x65}, null),
+                    new OpcodeDef(this::value_zpX,  4, new int[]{0x75}, null),
+                    new OpcodeDef(this::value_abs,  4, new int[]{0x6d}, null),
+                    new OpcodeDef(this::value_absX, 4, new int[]{0x7d}, null),
+                    new OpcodeDef(this::value_absY, 4, new int[]{0x79}, null),
+                    new OpcodeDef(this::value_xInd, 6, new int[]{0x61}, null),
+                    new OpcodeDef(this::value_indY, 5, new int[]{0x71}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0x72}, null),
             }),
-            new OpcodeType(this::AND, new OpcodeDef[]{
+            new OpcodeType(this::AND, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0x29}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0x25}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0x35}, null),
@@ -34,15 +32,17 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0x39}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0x21}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0x31}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0x32}, null),
             }),
-            new OpcodeType(this::ASL, new OpcodeDef[]{
+            new OpcodeType(this::ASL, new OpcodeDef[] {
                     new OpcodeDef(null,         2, new int[]{0x0a}, null),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x06}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x16}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x0e}, null),
                     new OpcodeDef(this::address_absX, 7, new int[]{0x1e}, null),
             }),
-            new OpcodeType(this::B__, new OpcodeDef[]{
+            new OpcodeType(this::B__, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0x10}, "NC"),  // BPL
                     new OpcodeDef(null, 2, new int[]{0x30}, "NS"),  // BMI
                     new OpcodeDef(null, 2, new int[]{0x50}, "VC"),  // BVC
@@ -52,14 +52,18 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(null, 2, new int[]{0xd0}, "ZC"),  // BNE
                     new OpcodeDef(null, 2, new int[]{0xf0}, "ZS"),  // BEQ
             }),
-            new OpcodeType(this::BIT, new OpcodeDef[]{
+            new OpcodeType(this::BIT, new OpcodeDef[] {
                     new OpcodeDef(this::value_zp,  3, new int[]{0x24}, null),
                     new OpcodeDef(this::value_abs, 4, new int[]{0x2c}, null),
+
+                    new OpcodeDef(this::value_imm,  2, new int[]{0x89}, null),
+                    new OpcodeDef(this::value_absX, 4, new int[]{0x3c}, null),
+                    new OpcodeDef(this::value_zpX,  4, new int[]{0x34}, null),
             }),
-            new OpcodeType(this::BRK, new OpcodeDef[]{
+            new OpcodeType(this::BRK, new OpcodeDef[] {
                     new OpcodeDef(null, 7, new int[]{0x00}, null),
             }),
-            new OpcodeType(this::CMP, new OpcodeDef[]{
+            new OpcodeType(this::CMP, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xc9}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0xc5}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0xd5}, null),
@@ -68,30 +72,32 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0xd9}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0xc1}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0xd1}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0xd2}, null),
             }),
-            new OpcodeType(this::CPX, new OpcodeDef[]{
+            new OpcodeType(this::CPX, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm, 2, new int[]{0xe0}, null),
                     new OpcodeDef(this::value_zp,  3, new int[]{0xe4}, null),
                     new OpcodeDef(this::value_abs, 4, new int[]{0xec}, null),
             }),
-            new OpcodeType(this::CPY, new OpcodeDef[]{
+            new OpcodeType(this::CPY, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm, 2, new int[]{0xc0}, null),
                     new OpcodeDef(this::value_zp,  3, new int[]{0xc4}, null),
                     new OpcodeDef(this::value_abs, 4, new int[]{0xcc}, null),
             }),
-            new OpcodeType(this::DEC, new OpcodeDef[]{
+            new OpcodeType(this::DEC, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,   5, new int[]{0xc6}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0xd6}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0xce}, null),
                     new OpcodeDef(this::address_absX, 7, new int[]{0xde}, null),
             }),
-            new OpcodeType(this::DEX, new OpcodeDef[]{
+            new OpcodeType(this::DEX, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0xca}, null),
             }),
-            new OpcodeType(this::DEY, new OpcodeDef[]{
+            new OpcodeType(this::DEY, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0x88}, null),
             }),
-            new OpcodeType(this::EOR, new OpcodeDef[]{
+            new OpcodeType(this::EOR, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0x49}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0x45}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0x55}, null),
@@ -100,38 +106,42 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0x59}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0x41}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0x51}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0x52}, null),
             }),
-            new OpcodeType(this::SE_, new OpcodeDef[]{
+            new OpcodeType(this::SE_, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0x38}, "C"),  // SEC
                     new OpcodeDef(null, 2, new int[]{0x78}, "I"),  // SEI
                     new OpcodeDef(null, 2, new int[]{0xf8}, "D"),  // SED
             }),
-            new OpcodeType(this::CL_, new OpcodeDef[]{
+            new OpcodeType(this::CL_, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0x18}, "C"),  // CLC
                     new OpcodeDef(null, 2, new int[]{0x58}, "I"),  // CLI
                     new OpcodeDef(null, 2, new int[]{0xb8}, "V"),  // CLV
                     new OpcodeDef(null, 2, new int[]{0xd8}, "D"),  // CLD
             }),
-            new OpcodeType(this::INC, new OpcodeDef[]{
+            new OpcodeType(this::INC, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,   5, new int[]{0xe6}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0xf6}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0xee}, null),
                     new OpcodeDef(this::address_absX, 7, new int[]{0xfe}, null),
             }),
-            new OpcodeType(this::INX, new OpcodeDef[]{
+            new OpcodeType(this::INX, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0xe8}, null),
             }),
-            new OpcodeType(this::INY, new OpcodeDef[]{
+            new OpcodeType(this::INY, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0xc8}, null),
             }),
-            new OpcodeType(this::JMP, new OpcodeDef[]{
+            new OpcodeType(this::JMP, new OpcodeDef[] {
                     new OpcodeDef(this::address_abs, 3, new int[]{0x4c}, null),
                     new OpcodeDef(this::address_ind, 5, new int[]{0x6c}, null),
+
+                    new OpcodeDef(this::address_absXInd, 6, new int[]{0x7c}, null),
             }),
-            new OpcodeType(this::JSR, new OpcodeDef[]{
+            new OpcodeType(this::JSR, new OpcodeDef[] {
                     new OpcodeDef(this::address_abs, 6, new int[]{0x20}, null),
             }),
-            new OpcodeType(this::LDA, new OpcodeDef[]{
+            new OpcodeType(this::LDA, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xa9}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0xa5}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0xb5}, null),
@@ -140,37 +150,43 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0xb9}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0xa1}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0xb1}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0xb2}, null),
             }),
-            new OpcodeType(this::LDX, new OpcodeDef[]{
+            new OpcodeType(this::LDX, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xa2}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0xa6}, null),
                     new OpcodeDef(this::value_zpY,  4, new int[]{0xb6}, null),
                     new OpcodeDef(this::value_abs,  4, new int[]{0xae}, null),
                     new OpcodeDef(this::value_absY, 4, new int[]{0xbe}, null),
             }),
-            new OpcodeType(this::LDY, new OpcodeDef[]{
+            new OpcodeType(this::LDY, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xa0}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0xa4}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0xb4}, null),
                     new OpcodeDef(this::value_abs,  4, new int[]{0xac}, null),
                     new OpcodeDef(this::value_absX, 4, new int[]{0xbc}, null),
             }),
-            new OpcodeType(this::LSR, new OpcodeDef[]{
+            new OpcodeType(this::LSR, new OpcodeDef[] {
                     new OpcodeDef(null,         2, new int[]{0x4a}, null),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x46}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x56}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x4e}, null),
                     new OpcodeDef(this::address_absX, 7, new int[]{0x5e}, null),
             }),
-            new OpcodeType(this::NOP, new OpcodeDef[]{
-                    new OpcodeDef(null,       2, new int[]{0x1a, 0x3a, 0x5a, 0x7a, 0xda, 0xea, 0xfa}, null),
-                    new OpcodeDef(this::value_imm,  2, new int[]{0x80, 0x82, 0x89, 0xc2, 0xe2}, null),
-                    new OpcodeDef(this::value_zp,   3, new int[]{0x04, 0x44, 0x64}, null),
-                    new OpcodeDef(this::value_zpX,  4, new int[]{0x14, 0x34, 0x54, 0x74, 0xd4, 0xf4}, null),
-                    new OpcodeDef(this::value_abs,  4, new int[]{0x0c}, null),
-                    new OpcodeDef(this::value_absX, 4, new int[]{0x1c, 0x3c, 0x5c, 0x7c, 0xdc, 0xfc}, null),
+            new OpcodeType(this::NOP, new OpcodeDef[] {
+                    new OpcodeDef(null,     1, new int[]{0x03, 0x13, 0x23, 0x33, 0x43, 0x53, 0x63, 0x73,
+                                                                        0x83, 0x93, 0xa3, 0xb3, 0xc3, 0xd3, 0xe3, 0xf3,
+                                                                        0x0b, 0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b,
+                                                                        0x8b, 0x9b, 0xab, 0xbb, 0xeb, 0xfb}, null),
+                    new OpcodeDef(null,     2, new int[]{0xea}, null),
+                    new OpcodeDef(this::nextByte, 2, new int[]{0x02, 0x22, 0x42, 0x62, 0x82, 0xc2, 0xe2}, null),
+                    new OpcodeDef(this::nextByte, 3, new int[]{0x44}, null),
+                    new OpcodeDef(this::nextByte, 4, new int[]{0x54, 0xd4, 0xf4}, null),
+                    new OpcodeDef(this::nextWord, 4, new int[]{0xdc, 0xfc}, null),
+                    new OpcodeDef(this::nextWord, 8, new int[]{0x5c}, null),
             }),
-            new OpcodeType(this::ORA, new OpcodeDef[]{
+            new OpcodeType(this::ORA, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0x09}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0x05}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0x15}, null),
@@ -179,16 +195,24 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0x19}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0x01}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0x11}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0x12}, null),
             }),
-            new OpcodeType(this::PH_, new OpcodeDef[]{
+            new OpcodeType(this::PH_, new OpcodeDef[] {
                     new OpcodeDef(null, 3, new int[]{0x48}, "A"),  // PHA
                     new OpcodeDef(null, 3, new int[]{0x08}, "P"),  // PHP
+
+                    new OpcodeDef(null, 3, new int[]{0xda}, "X"),  // PHX
+                    new OpcodeDef(null, 3, new int[]{0x5a}, "Y"),  // PHY
             }),
-            new OpcodeType(this::PL_, new OpcodeDef[]{
+            new OpcodeType(this::PL_, new OpcodeDef[] {
                     new OpcodeDef(null, 4, new int[]{0x68}, "A"),  // PLA
                     new OpcodeDef(null, 4, new int[]{0x28}, "P"),  // PLP
+
+                    new OpcodeDef(null, 4, new int[]{0xfa}, "X"),  // PLX
+                    new OpcodeDef(null, 4, new int[]{0x7a}, "Y"),  // PLY
             }),
-            new OpcodeType(this::T__, new OpcodeDef[]{
+            new OpcodeType(this::T__, new OpcodeDef[] {
                     new OpcodeDef(null, 2, new int[]{0xaa}, "AX"),  // TAX
                     new OpcodeDef(null, 2, new int[]{0x8a}, "XA"),  // TXA
                     new OpcodeDef(null, 2, new int[]{0xa8}, "AY"),  // TAY
@@ -196,28 +220,28 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(null, 2, new int[]{0x9a}, "XS"),  // TXS
                     new OpcodeDef(null, 2, new int[]{0xba}, "SX"),  // TSX
             }),
-            new OpcodeType(this::ROL, new OpcodeDef[]{
+            new OpcodeType(this::ROL, new OpcodeDef[] {
                     new OpcodeDef(null,         2, new int[]{0x2a}, null),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x26}, null),
                     new OpcodeDef(this::address_zpX,  5, new int[]{0x36}, null),
                     new OpcodeDef(this::address_abs,  5, new int[]{0x2e}, null),
                     new OpcodeDef(this::address_absX, 5, new int[]{0x3e}, null),
             }),
-            new OpcodeType(this::ROR, new OpcodeDef[]{
+            new OpcodeType(this::ROR, new OpcodeDef[] {
                     new OpcodeDef(null,         2, new int[]{0x6a}, null),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x66}, null),
                     new OpcodeDef(this::address_zpX,  5, new int[]{0x76}, null),
                     new OpcodeDef(this::address_abs,  5, new int[]{0x6e}, null),
                     new OpcodeDef(this::address_absX, 5, new int[]{0x7e}, null),
             }),
-            new OpcodeType(this::RTI, new OpcodeDef[]{
+            new OpcodeType(this::RTI, new OpcodeDef[] {
                     new OpcodeDef(null, 6, new int[]{0x40}, null),
             }),
-            new OpcodeType(this::RTS, new OpcodeDef[]{
+            new OpcodeType(this::RTS, new OpcodeDef[] {
                     new OpcodeDef(null, 6, new int[]{0x60}, null),
             }),
-            new OpcodeType(this::SBC, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm,  2, new int[]{0xe9, 0xeb}, null),
+            new OpcodeType(this::SBC, new OpcodeDef[] {
+                    new OpcodeDef(this::value_imm,  2, new int[]{0xe9}, null),
                     new OpcodeDef(this::value_zp,   3, new int[]{0xe5}, null),
                     new OpcodeDef(this::value_zpX,  4, new int[]{0xf5}, null),
                     new OpcodeDef(this::value_abs,  4, new int[]{0xed}, null),
@@ -225,8 +249,10 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::value_absY, 4, new int[]{0xf9}, null),
                     new OpcodeDef(this::value_xInd, 6, new int[]{0xe1}, null),
                     new OpcodeDef(this::value_indY, 5, new int[]{0xf1}, null),
+
+                    new OpcodeDef(this::value_zpInd, 5, new int[]{0xf2}, null),
             }),
-            new OpcodeType(this::STA, new OpcodeDef[]{
+            new OpcodeType(this::STA, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,   3, new int[]{0x85}, null),
                     new OpcodeDef(this::address_zpX,  4, new int[]{0x95}, null),
                     new OpcodeDef(this::address_abs,  4, new int[]{0x8d}, null),
@@ -234,124 +260,89 @@ public class CPU extends WindowWithTitle {
                     new OpcodeDef(this::address_absY, 4, new int[]{0x99}, null),
                     new OpcodeDef(this::address_xInd, 6, new int[]{0x81}, null),
                     new OpcodeDef(this::address_indY, 5, new int[]{0x91}, null),
+
+                    new OpcodeDef(this::address_zpInd, 5, new int[]{0x92}, null),
             }),
-            new OpcodeType(this::STX, new OpcodeDef[]{
+            new OpcodeType(this::STX, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,  3, new int[]{0x86}, null),
                     new OpcodeDef(this::address_zpY, 4, new int[]{0x96}, null),
                     new OpcodeDef(this::address_abs, 4, new int[]{0x8e}, null),
             }),
-            new OpcodeType(this::STY, new OpcodeDef[]{
+            new OpcodeType(this::STY, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,  3, new int[]{0x84}, null),
                     new OpcodeDef(this::address_zpX, 4, new int[]{0x94}, null),
                     new OpcodeDef(this::address_abs, 4, new int[]{0x8c}, null),
             }),
 
-            // Illegal Opcodes
-            new OpcodeType(this::ALR, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0x4b}, null),
+            // 65c02 exclusive instructions
+            new OpcodeType(this::BBR, new OpcodeDef[] {
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x0f}, "0"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x1f}, "1"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x2f}, "2"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x3f}, "3"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x4f}, "4"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x5f}, "5"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x6f}, "6"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x7f}, "7"),
             }),
-            new OpcodeType(this::ANC, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0x0b, 0x2b}, null),
+            new OpcodeType(this::BBS, new OpcodeDef[] {
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x8f}, "0"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0x9f}, "1"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xaf}, "2"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xbf}, "3"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xcf}, "4"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xdf}, "5"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xef}, "6"),
+                    new OpcodeDef(this::value_zp, 5, new int[]{0xff}, "7"),
             }),
-            new OpcodeType(this::ANE, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0x8b}, null),
+            new OpcodeType(this::BRA, new OpcodeDef[] {
+                    new OpcodeDef(null, 3, new int[]{0x80}, null),
             }),
-            new OpcodeType(this::ARR, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0x6b}, null),
+            new OpcodeType(this::DEA, new OpcodeDef[] {
+                    new OpcodeDef(null, 2, new int[]{0x3a}, null),
             }),
-            new OpcodeType(this::DCP, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0xc7}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0xd7}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0xcf}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0xdf}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0xdb}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0xc3}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0xd3}, null),
+            new OpcodeType(this::INA, new OpcodeDef[] {
+                    new OpcodeDef(null, 2, new int[]{0x1a}, null),
             }),
-            new OpcodeType(this::ISC, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0xe7}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0xf7}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0xef}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0xff}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0xfb}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0xe3}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0xf3}, null),
+            new OpcodeType(this::RMB, new OpcodeDef[] {
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x07}, "0"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x17}, "1"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x27}, "2"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x37}, "3"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x47}, "4"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x57}, "5"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x67}, "6"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x77}, "7"),
             }),
-            new OpcodeType(this::LAS, new OpcodeDef[]{
-                    new OpcodeDef(this::value_absY, 4, new int[]{0xbb}, null),
+            new OpcodeType(this::SMB, new OpcodeDef[] {
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x87}, "0"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0x97}, "1"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xa7}, "2"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xb7}, "3"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xc7}, "4"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xd7}, "5"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xe7}, "6"),
+                    new OpcodeDef(this::address_zp, 5, new int[]{0xf7}, "7"),
             }),
-            new OpcodeType(this::LAX, new OpcodeDef[]{
-                    new OpcodeDef(this::value_zp,   3, new int[]{0xa7}, null),
-                    new OpcodeDef(this::value_zpY,  4, new int[]{0xb7}, null),
-                    new OpcodeDef(this::value_abs,  4, new int[]{0xaf}, null),
-                    new OpcodeDef(this::value_absY, 4, new int[]{0xbf}, null),
-                    new OpcodeDef(this::value_xInd, 6, new int[]{0xa3}, null),
-                    new OpcodeDef(this::value_indY, 5, new int[]{0xb3}, null),
+            new OpcodeType(this::STP, new OpcodeDef[] {
+                    new OpcodeDef(null, 3, new int[]{0xdb}, null),
             }),
-            new OpcodeType(this::LXA, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0xab}, null),
+            new OpcodeType(this::STZ, new OpcodeDef[]{
+                    new OpcodeDef(this::address_zp,   2, new int[]{0x64}, null),
+                    new OpcodeDef(this::address_zpX,  2, new int[]{0x74}, null),
+                    new OpcodeDef(this::address_abs,  3, new int[]{0x9c}, null),
+                    new OpcodeDef(this::address_absX, 3, new int[]{0x9e}, null),
             }),
-            new OpcodeType(this::RLA, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0x27}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0x37}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0x2f}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0x3f}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0x3b}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0x23}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0x33}, null),
+            new OpcodeType(this::TRB, new OpcodeDef[]{
+                    new OpcodeDef(this::address_zp,   6, new int[]{0x1c}, null),
+                    new OpcodeDef(this::address_abs,  5, new int[]{0x14}, null),
             }),
-            new OpcodeType(this::RRA, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0x67}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0x77}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0x6f}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0x7f}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0x7b}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0x63}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0x73}, null),
+            new OpcodeType(this::TSB, new OpcodeDef[]{
+                    new OpcodeDef(this::address_zp,   6, new int[]{0x0c}, null),
+                    new OpcodeDef(this::address_abs,  5, new int[]{0x04}, null),
             }),
-            new OpcodeType(this::SAX, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   3, new int[]{0x87}, null),
-                    new OpcodeDef(this::address_zpY,  4, new int[]{0x97}, null),
-                    new OpcodeDef(this::address_abs,  4, new int[]{0x8f}, null),
-                    new OpcodeDef(this::address_xInd, 6, new int[]{0x83}, null),
-            }),
-            new OpcodeType(this::SBX, new OpcodeDef[]{
-                    new OpcodeDef(this::value_imm, 2, new int[]{0xcb}, null),
-            }),
-            new OpcodeType(this::SHA, new OpcodeDef[]{
-                    new OpcodeDef(this::address_absY, 5, new int[]{0x9f}, null),
-                    new OpcodeDef(this::address_indY, 6, new int[]{0x93}, null),
-            }),
-            new OpcodeType(this::SHX, new OpcodeDef[]{
-                    new OpcodeDef(this::address_absY, 5, new int[]{0x9e}, null),
-            }),
-            new OpcodeType(this::SHY, new OpcodeDef[]{
-                    new OpcodeDef(this::address_absX, 5, new int[]{0x9c}, null),
-            }),
-            new OpcodeType(this::SLO, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0x07}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0x17}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0x0f}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0x1f}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0x1b}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0x03}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0x13}, null),
-            }),
-            new OpcodeType(this::SRE, new OpcodeDef[]{
-                    new OpcodeDef(this::address_zp,   5, new int[]{0x47}, null),
-                    new OpcodeDef(this::address_zpX,  6, new int[]{0x57}, null),
-                    new OpcodeDef(this::address_abs,  6, new int[]{0x4f}, null),
-                    new OpcodeDef(this::address_absX, 7, new int[]{0x5f}, null),
-                    new OpcodeDef(this::address_absY, 7, new int[]{0x5b}, null),
-                    new OpcodeDef(this::address_xInd, 8, new int[]{0x43}, null),
-                    new OpcodeDef(this::address_indY, 8, new int[]{0x53}, null),
-            }),
-            new OpcodeType(this::TAS, new OpcodeDef[]{
-                    new OpcodeDef(this::address_absY, 5, new int[]{0x9b}, null),
-            }),
-            new OpcodeType(this::JAM, new OpcodeDef[]{
-                    new OpcodeDef(null, 0, new int[]{0x02, 0x12, 0x22, 0x32, 0x42, 0x52,
-                                                                  0x62, 0x72, 0x92, 0xb2, 0xd2, 0xf2}, null),
+            new OpcodeType(this::WAI, new OpcodeDef[] {
+                    new OpcodeDef(null, 3, new int[]{0xcb}, null),
             }),
     };
     private final Opcode[] opcodes = new Opcode[0x100];
@@ -371,9 +362,9 @@ public class CPU extends WindowWithTitle {
     private int PC = 0x0000;
 
     private int     cycles = 0;
+    private boolean wait   = false;
+    private boolean stop   = false;
     private boolean jam    = false;
-
-    private boolean stepped = false;
 
     private static final String[] STATUS_NAMES = {"A", "X", "Y", "S", "P", "PC", "MDR"};
     private final VBox statusText;
@@ -412,40 +403,40 @@ public class CPU extends WindowWithTitle {
         if (cycles > 0) {
             cycles--;
         } else if (cycles == 0) {
-            if (stepped) {
-                stepped = false;
-                CMU.step = false;
-            }
-            if (CMU.step) {
-                stepped = true;
-            }
+            CMU.step = false;
 
-            if (jam) {
-                CMU.read(0xffff);
-            } else {
-                if (CMU.pollNMI()) {
-                    // NMIs have priority
-                    hardwareInterrupt(1);
-                } else if (!CMU.pollIRQ() & (!getFlag('I'))) {
-                    //    ^^^ IRQs are active-low
-                    hardwareInterrupt(2);
+            if (!stop) {
+                if (jam) {
+                    CMU.read(0xffff);
                 } else {
-                    int opcode = nextByte();
-                    Opcode op  = opcodes[opcode];
-                    cycles     = op.cycles;
-                    op.execute();
+                    if (CMU.pollNMI()) {
+                        // NMIs have priority
+                        hardwareInterrupt(1);
+                    } else if (!CMU.pollIRQ() & (!getFlag('I'))) {
+                        //    ^^^ IRQs are active-low
+                        hardwareInterrupt(2);
+                    } else if (!wait) {
+                        int opcode = nextByte();
+                        Opcode op = opcodes[opcode];
+                        cycles = op.cycles;
+                        op.execute();
+                    }
                 }
             }
         }
     }
     private void hardwareInterrupt(int i) {
+        wait = false;
         cycles = 7;
         stackPushWord(PC);
         stackPush(P | 0b0010_0000);  // bit 5 gets pushed as 1 by IRQs and NMIs
         setFlag('I');
+        clearFlag('D');
         PC = vectorAddress(i);
     }
     public void reset() {
+        wait = false;
+        stop = false;
         jam = false;
         cycles = 7;
 
@@ -501,6 +492,10 @@ public class CPU extends WindowWithTitle {
         writeFlag('N', (v & 0x80) != 0);
     }
 
+    private int bitMask(int i) {
+        return 1 << i;
+    }
+
     private void stackPush(int v) {
         CMU.write(0x0100 | S, v);
         S = (S - 1) & 0xff;
@@ -553,6 +548,10 @@ public class CPU extends WindowWithTitle {
     private int address_zpY() {
         return address_zpXY(Y);
     }
+    private int address_zpInd() {
+        int a = nextByte();
+        return CMU.read(a) | (CMU.read(a + 1) << 8);
+    }
     private int address_abs() {
         return nextWord();
     }
@@ -567,7 +566,7 @@ public class CPU extends WindowWithTitle {
     }
     private int address_ind() {
         int i = nextWord();
-        int j = ((i & 0xff) == 0xff) ? (i & 0xff00) : i + 1;
+        int j = (i + 1) & 0xffff;
         return (CMU.read(i) | (CMU.read(j) << 8));
     }
     private int address_xInd() {
@@ -577,6 +576,10 @@ public class CPU extends WindowWithTitle {
     private int address_indY() {
         int a = nextByte();
         return indexedAddress(CMU.read(a) | (CMU.read((a + 1) & 0xff) << 8), Y);
+    }
+    private int address_absXInd() {
+        int a = (nextWord() + X) & 0xffff;
+        return CMU.read(a) | (CMU.read((a + 1) & 0xffff) << 8);
     }
 
     private int value_imm() {
@@ -590,6 +593,9 @@ public class CPU extends WindowWithTitle {
     }
     private int value_zpY() {
         return CMU.read(address_zpXY(Y));
+    }
+    private int value_zpInd() {
+        return CMU.read(address_zpInd());
     }
     private int value_abs() {
         return CMU.read(address_abs());
@@ -608,6 +614,27 @@ public class CPU extends WindowWithTitle {
     }
     private int value_indY() {
         return CMU.read(address_indY());
+    }
+    private int value_absXInd() {
+        return CMU.read(address_absXInd());
+    }
+
+    private boolean bitBranchValue(int v, OpcodeContext c) {
+        return (v & bitMask(c.args.charAt(0) - '0')) != 0;
+    }
+    private void branch(int offsetByte) {
+        cycles++;
+        int o = PC;
+        PC += EmuHelper.fromTwosComp(offsetByte);
+        PC &= 0xffff;
+        if ((PC & 0xff00) != (o & 0xff00)) {
+            cycles++;
+        }
+    }
+    private void compare(int reg, int v) {
+        int r = (reg - v) & 0xff;
+        flagsZN(r);
+        writeFlag('C', v <= reg);
     }
 
     private void ADC(OpcodeContext c) {
@@ -647,13 +674,7 @@ public class CPU extends WindowWithTitle {
     private void B__(OpcodeContext c) {
         int d = value_imm();
         if (getFlag(c.args.charAt(0)) == (c.args.charAt(1) == 'S')) {
-            cycles++;
-            int o = PC;
-            PC += EmuHelper.fromTwosComp(d);
-            PC &= 0xffff;
-            if (!((PC & 0xff00) == (o & 0xff00))) {
-                cycles++;
-            }
+            branch(d);
         }
     }
     private void BIT(OpcodeContext c) {
@@ -668,19 +689,14 @@ public class CPU extends WindowWithTitle {
         setFlag('I');
         PC = vectorAddress(2);
     }
-    private void C__(int reg, int v) {
-        int r = (reg - v) & 0xff;
-        flagsZN(r);
-        writeFlag('C', v <= reg);
-    }
     private void CMP(OpcodeContext c) {
-        C__(A, c.input);
+        compare(A, c.input);
     }
     private void CPX(OpcodeContext c) {
-        C__(X, c.input);
+        compare(X, c.input);
     }
     private void CPY(OpcodeContext c) {
-        C__(Y, c.input);
+        compare(Y, c.input);
     }
     private void DEC(OpcodeContext c) {
         int v = (CMU.read(c.input) - 1) & 0xff;
@@ -761,19 +777,29 @@ public class CPU extends WindowWithTitle {
     }
     private void PH_(OpcodeContext c) {
         char r = c.args.charAt(0);
-        if (r == 'A') {
-            stackPush(A);
-        } else {
-            stackPush(P | 0b0011_0000);  // bit 5 and the B flag both get pushed as 1 by PHP
+        switch (r) {
+            case 'A' -> stackPush(A);
+            case 'X' -> stackPush(X);
+            case 'Y' -> stackPush(Y);
+            case 'P' -> stackPush(P | 0b0011_0000);  // bit 5 and the B flag both get pushed as 1 by PHP
         }
     }
     private void PL_(OpcodeContext c) {
         char r = c.args.charAt(0);
-        if (r == 'A') {
-            A = stackPull();
-            flagsZN(A);
-        } else {
-            P = (stackPull() & 0b1100_1111);  // bit 5 and the B flag get ignored by PLP
+        switch (r) {
+            case 'A' -> {
+                A = stackPull();
+                flagsZN(A);
+            }
+            case 'X' -> {
+                X = stackPull();
+                flagsZN(X);
+            }
+            case 'Y' -> {
+                Y = stackPull();
+                flagsZN(Y);
+            }
+            case 'P' -> P = (stackPull() & 0b1100_1111);  // bit 5 and the B flag get ignored by PLP
         }
     }
     private void T__(OpcodeContext c) {
@@ -861,6 +887,61 @@ public class CPU extends WindowWithTitle {
         CMU.write(c.input, Y);
     }
 
+    // WDC 65c02 exclusive instructions
+    private void BBR(OpcodeContext c) {
+        int d = nextByte();
+        if (!bitBranchValue(c.input, c)) {
+            branch(d);
+        }
+    }
+    private void BBS(OpcodeContext c) {
+        int d = nextByte();
+        if (bitBranchValue(c.input, c)) {
+            branch(d);
+        }
+    }
+    private void BRA(OpcodeContext c) {
+        branch(value_imm());
+    }
+    private void DEA(OpcodeContext c) {
+        A = (A - 1) & 0xff;
+        flagsZN(A);
+    }
+    private void INA(OpcodeContext c) {
+        A = (A + 1) & 0xff;
+        flagsZN(A);
+    }
+    private void RMB(OpcodeContext c) {
+        int v = CMU.read(c.input);
+        v &= ~bitMask(c.args.charAt(0) - '0');
+        CMU.write(c.input, v);
+    }
+    private void SMB(OpcodeContext c) {
+        int v = CMU.read(c.input);
+        v |= bitMask(c.args.charAt(0) - '0');
+        CMU.write(c.input, v);
+    }
+    private void STP(OpcodeContext c) {
+        stop = true;
+    }
+    private void STZ(OpcodeContext c) {
+        CMU.write(c.input, 0x00);
+    }
+    private void TRB(OpcodeContext c) {
+        int v = CMU.read(c.input);
+        writeFlag('Z', (A & v) == 0);
+        CMU.write(c.input, ~A & v);
+    }
+    private void TSB(OpcodeContext c) {
+        int v = CMU.read(c.input);
+        writeFlag('Z', (A & v) == 0);
+        CMU.write(c.input, A | v);
+    }
+    private void WAI(OpcodeContext c) {
+        wait = true;
+    }
+
+    // original 6502 unintended instructions
     private void ALR(OpcodeContext c) {  // (ASR)
         AND(c);
         // to effectively LSR A
