@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'org.kittykat'
+version = '1.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClass = 'org.kittykat.cat65.Cat65'
+}
+
+javafx {
+    version = "21.0.10"
+    modules = ['javafx.controls', 'javafx.graphics']
+}
+
+def osName = System.getProperty('os.name').toLowerCase()
+def platform = ''
+if (osName.contains('win')) {
+    platform = 'win'
+} else if (osName.contains('mac')) {
+    platform = 'mac'
+} else if (osName.contains('linux')) {
+    platform = 'linux'
+}
+
+dependencies {
+    def javafxModules = ['base', 'controls', 'graphics']
+    javafxModules.each { module ->
+        implementation "org.openjfx:javafx-$module:${javafx.version}:$platform"
+        implementation "org.openjfx:javafx-$module:${javafx.version}:sources"
+    }
+    /*
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+     */
+}
+
+/*
+test {
+    useJUnitPlatform()
+}
+ */
