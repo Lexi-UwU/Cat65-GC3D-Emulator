@@ -9,10 +9,12 @@ public class VIA extends ExtraChip {
     private int ddrb = 0x00;
 
     private boolean t1Running = false;
-    private int t1Latch = 0x0000;
+    private boolean t1SetIRQ  = false;
+    private int t1Latch   = 0x0000;
     private int t1Counter = 0x0000;
     private boolean t2Running = false;
-    private int t2Latch = 0x0000;
+    private boolean t2SetIRQ  = false;
+    private int t2Latch   = 0x0000;
     private int t2Counter = 0x0000;
 
     private int shiftReg = 0x00;
@@ -43,12 +45,13 @@ public class VIA extends ExtraChip {
         if (t1Running) {
             t1Counter = (t1Counter - 1) & 0xffff;
             if (t1Counter == 0xffff) {
-                irqFlags |= 0b0100_0000;
                 // ACR7 is ignored since that just determines if PB7 (unconnected) would be used
-                if ((auxiliaryCTRL & 0b0100_0000) != 0) {
-                    t1Counter = t1Latch;
-                } else {
-                    t1Running = false;
+                t1Counter = t1Latch + 1;
+                if (t1SetIRQ) {
+                    irqFlags |= 0b0100_0000;
+                }
+                if ((auxiliaryCTRL & 0b0100_0000) == 0) {
+                    t1SetIRQ = false;
                 }
             }
         }
@@ -57,8 +60,10 @@ public class VIA extends ExtraChip {
             if ((auxiliaryCTRL & 0b0010_0000) == 0) {
                 t2Counter = (t2Counter - 1) & 0xffff;
                 if (t2Counter == 0xffff) {
-                    irqFlags |= 0b0010_0000;
-                    t2Running = false;
+                    if (t2SetIRQ) {
+                        irqFlags |= 0b0010_0000;
+                    }
+                    t2SetIRQ = false;
                 }
             }
         }
@@ -140,6 +145,7 @@ public class VIA extends ExtraChip {
                 t1Counter = t1Latch;
                 clearT1IRQ(cpu);
                 t1Running = true;
+                t1SetIRQ  = true;
             }
             case 0x7 -> {
                 t1Latch = (t1Latch & 0x00ff) | (value << 8);
@@ -150,6 +156,7 @@ public class VIA extends ExtraChip {
                 t2Counter = t2Latch | (value << 8);
                 clearT2IRQ(cpu);
                 t2Running = true;
+                t2SetIRQ  = true;
             }
             case 0xa -> shiftReg       = value;
             case 0xb -> auxiliaryCTRL  = value;
