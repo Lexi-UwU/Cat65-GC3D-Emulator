@@ -9,6 +9,6 @@ public abstract class WindowWithTitle extends Window {
         super();
         lbl_winTitle = new Label(title);
         lbl_winTitle.getStyleClass().add("win-title");
-        this.getChildren().add(lbl_winTitle);
+        getChildren().add(lbl_winTitle);
     }
 }

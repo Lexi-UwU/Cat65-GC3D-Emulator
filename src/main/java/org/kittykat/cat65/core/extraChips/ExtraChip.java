@@ -4,7 +4,7 @@ public abstract class ExtraChip {
     private final int bitMask;
 
     public ExtraChip(int mirrorAddressMask) {
-        this.bitMask = mirrorAddressMask;
+        bitMask = mirrorAddressMask;
     }
 
     public void reset() {}

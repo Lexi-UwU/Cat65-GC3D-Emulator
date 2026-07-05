@@ -8,7 +8,7 @@ public class RingBuffer {
 
     public RingBuffer(int bufferSize) {
         this.bufferSize = bufferSize;
-        this.buffer = new float[bufferSize];
+        buffer = new float[bufferSize];
     }
 
     @SuppressWarnings("NonAtomicOperationOnVolatileField")

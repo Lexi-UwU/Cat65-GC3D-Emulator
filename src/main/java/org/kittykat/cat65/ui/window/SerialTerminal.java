@@ -36,7 +36,7 @@ public class SerialTerminal extends WindowWithTitle {
             e.consume();
         });
         VBox.setVgrow(terminal, Priority.ALWAYS);
-        this.getChildren().add(terminal);
+        getChildren().add(terminal);
     }
 
     public void print(char chr) {

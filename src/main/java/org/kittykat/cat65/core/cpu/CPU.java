@@ -379,7 +379,7 @@ public class CPU extends WindowWithTitle {
             lbl_reg.getStyleClass().add("CPU-reg");
             statusText.getChildren().add(lbl_reg);
         }
-        this.getChildren().add(statusText);
+        getChildren().add(statusText);
 
         makeOpcodes();
     }

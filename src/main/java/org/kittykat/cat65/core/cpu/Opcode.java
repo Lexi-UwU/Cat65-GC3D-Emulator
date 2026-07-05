@@ -12,10 +12,10 @@ class Opcode {
 
     public Opcode(Consumer<OpcodeContext> method, IntSupplier input, String args, int cycles) {
         this.method = method;
-        this.hasInput = (input != null);
         this.input = input;
         this.args = args;
         this.cycles = cycles;
+        hasInput = (input != null);
     }
 
     public void execute() {

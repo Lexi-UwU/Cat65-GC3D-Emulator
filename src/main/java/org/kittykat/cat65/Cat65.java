@@ -27,7 +27,7 @@ public class Cat65 extends Application {
         root.setId("root");
         root.setCenter(CMU.makeWindow());
 
-        Scene scene = new Scene(root, 1000, 750);
+        Scene scene = new Scene(root, 1440, 750);
         EmuHelper.applyCSS(scene);
 
         mainStage.setTitle("Cat65 Emulator >w<");
