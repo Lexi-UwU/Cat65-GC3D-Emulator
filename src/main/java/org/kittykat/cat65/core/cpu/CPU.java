@@ -445,7 +445,7 @@ public class CPU extends WindowWithTitle {
         cycles = 7;
 
         nextByte();  // left over BRK read (would read the opcode)
-        nextByte();  // dummy read left over from BRK
+        nextByte();  // dummy read from BRK
 
         // suppressed stack writes (converted to reads)
         read(0x0100 | S);
@@ -517,6 +517,9 @@ public class CPU extends WindowWithTitle {
         return stackPull() | (stackPull() << 8);
     }
 
+    private void dummyRead() {
+        read(PC);
+    }
     private int nextByte() {
         int v = read(PC);
         PC = (PC + 1) & 0xffff;
@@ -532,15 +535,14 @@ public class CPU extends WindowWithTitle {
         int high = read(INTERRUPT_ADDRESSES[i] + 1);
         return ((high << 8) | low);
     }
-    private int indexedAddress(int address, int i) {
+    private int indexedAddress(int address, int i, boolean fixedCycles) {
         int a = address + i;
-        if ((address & 0xff00) != (a & 0xff00)) {
-            cycles++;
+        if ((address & 0xff00) != (a & 0xff00)) {  // check if a page-boundary is crossed
+            // it first reads the byte at the address with the correct low-byte but incorrect high-byte before fixing the high-byte
+            read((a & 0xff00) | (PC & 0x00ff));
+            if (!fixedCycles) cycles++;
         }
         return a & 0xffff;
-    }
-    private int indexedAddress_fixed(int address, int i) {
-        return (address + i) & 0xffff;
     }
 
     private int address_zp() {
@@ -563,19 +565,19 @@ public class CPU extends WindowWithTitle {
         return nextWord();
     }
     private int address_absXY(int i) {
-        return indexedAddress(nextWord(), i);
+        return indexedAddress(nextWord(), i, false);
     }
     private int address_absX() {
-        return indexedAddress(nextWord(), X);
+        return address_absXY(X);
     }
     private int address_absX_fixed() {
-        return indexedAddress_fixed(nextWord(), X);
+        return indexedAddress(nextWord(), X, true);
     }
     private int address_absY() {
-        return indexedAddress(nextWord(), Y);
+        return address_absXY(Y);
     }
     private int address_absY_fixed() {
-        return indexedAddress_fixed(nextWord(), Y);
+        return indexedAddress(nextWord(), Y, true);
     }
     private int address_ind() {
         int i = nextWord();
@@ -588,11 +590,11 @@ public class CPU extends WindowWithTitle {
     }
     private int address_indY() {
         int a = nextByte();
-        return indexedAddress(read(a) | (read((a + 1) & 0xff) << 8), Y);
+        return indexedAddress(read(a) | (read((a + 1) & 0xff) << 8), Y, false);
     }
     private int address_indY_fixed() {
         int a = nextByte();
-        return indexedAddress_fixed(read(a) | (read((a + 1) & 0xff) << 8), Y);
+        return indexedAddress(read(a) | (read((a + 1) & 0xff) << 8), Y, true);
     }
     private int address_absXInd() {
         int a = (nextWord() + X) & 0xffff;
@@ -640,10 +642,13 @@ public class CPU extends WindowWithTitle {
         return (v & bitMask(c.args.charAt(0) - '0')) != 0;
     }
     private void branch(int offsetByte) {
+        dummyRead();  // the processor always fetches the byte following a branch instruction even if the branch is taken
         cycles++;
         int original = PC;
         PC = (PC + EmuHelper.fromTwosComp(offsetByte)) & 0xffff;
-        if ((PC & 0xff00) != (original & 0xff00)) {  // check if page-boundary is crossed
+        if ((PC & 0xff00) != (original & 0xff00)) {  // check if a page-boundary is crossed
+            // it first reads the byte at the address with the correct low-byte but incorrect high-byte before fixing the high-byte
+            read((original & 0xff00) | (PC & 0x00ff));
             cycles++;
         }
     }
@@ -682,6 +687,7 @@ public class CPU extends WindowWithTitle {
             v = read(c.input) << 1;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             v = A << 1;
             A = v & 0xff;
         }
@@ -702,7 +708,7 @@ public class CPU extends WindowWithTitle {
         }
     }
     private void BRK(OpcodeContext c) {
-        nextByte();  // BRK dummy read
+        nextByte();  // dummy read (implied instruction)
 
         stackPushWord(PC);
         stackPush(P | 0b0011_0000);  // bit 5 and the B flag both get pushed as 1 by BRK
@@ -712,6 +718,12 @@ public class CPU extends WindowWithTitle {
         clearFlag('D');
 
         PC = vectorAddress(2);
+    }
+    private void CL_(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+        
+        // clear flag instructions
+        clearFlag(c.args.charAt(0));
     }
     private void CMP(OpcodeContext c) {
         compare(A, c.input);
@@ -728,15 +740,20 @@ public class CPU extends WindowWithTitle {
             v = (read(c.input) - 1) & 0xff;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             A = v = (A - 1) & 0xff;
         }
         flagsZN(v);
     }
     private void DEX(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         X = (X - 1) & 0xff;
         flagsZN(X);
     }
     private void DEY(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         Y = (Y - 1) & 0xff;
         flagsZN(Y);
     }
@@ -744,29 +761,26 @@ public class CPU extends WindowWithTitle {
         A ^= c.input;
         flagsZN(A);
     }
-    private void SE_(OpcodeContext c) {
-        // set flag instructions
-        setFlag(c.args.charAt(0));
-    }
-    private void CL_(OpcodeContext c) {
-        // clear flag instructions
-        clearFlag(c.args.charAt(0));
-    }
     private void INC(OpcodeContext c) {
         int v;
         if (c.hasInput) {
             v = (read(c.input) + 1) & 0xff;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             A = v = (A + 1) & 0xff;
         }
         flagsZN(v);
     }
     private void INX(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         X = (X + 1) & 0xff;
         flagsZN(X);
     }
     private void INY(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         Y = (Y + 1) & 0xff;
         flagsZN(Y);
     }
@@ -797,6 +811,7 @@ public class CPU extends WindowWithTitle {
             v >>= 1;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             writeFlag('C', (A & 0x01) != 0);
             A >>= 1;
             v = A;
@@ -804,6 +819,8 @@ public class CPU extends WindowWithTitle {
         flagsZN(v);
     }
     private void NOP(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         // wow :3c
         // such empty >w<
     }
@@ -812,6 +829,8 @@ public class CPU extends WindowWithTitle {
         flagsZN(A);
     }
     private void PH_(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         // stack push instructions
         char r = c.args.charAt(0);
         switch (r) {
@@ -822,6 +841,8 @@ public class CPU extends WindowWithTitle {
         }
     }
     private void PL_(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         // stack pull instructions
         char r = c.args.charAt(0);
         switch (r) {
@@ -841,6 +862,8 @@ public class CPU extends WindowWithTitle {
         }
     }
     private void T__(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         // register transfer instructions
         char s = c.args.charAt(0);
         char d = c.args.charAt(1);
@@ -870,6 +893,7 @@ public class CPU extends WindowWithTitle {
             v = ((o << 1) | carry) & 0xff;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             o = A;
             A = v = ((o << 1) | carry) & 0xff;
         }
@@ -885,6 +909,7 @@ public class CPU extends WindowWithTitle {
             v = ((o >> 1) | carry) & 0xff;
             write(c.input, v);
         } else {
+            dummyRead();  // dummy read (implied instruction)
             o = A;
             A = v = ((o >> 1) | carry) & 0xff;
         }
@@ -892,11 +917,21 @@ public class CPU extends WindowWithTitle {
         flagsZN(v);
     }
     private void RTI(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         P  = (stackPull() & 0b1100_1111);  // bit 5 and the B flag get ignored by RTI
         PC = stackPullWord();
     }
     private void RTS(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
         PC = (stackPullWord() + 1) & 0xffff;
+    }
+    private void SE_(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
+
+        // set flag instructions
+        setFlag(c.args.charAt(0));
     }
     private void SBC(OpcodeContext c) {
         int carry = EmuHelper.boolBit(!getFlag('C'));
@@ -953,6 +988,7 @@ public class CPU extends WindowWithTitle {
         write(c.input, v);
     }
     private void STP(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
         stop = true;
     }
     private void STZ(OpcodeContext c) {
@@ -969,6 +1005,7 @@ public class CPU extends WindowWithTitle {
         write(c.input, A | v);
     }
     private void WAI(OpcodeContext c) {
+        dummyRead();  // dummy read (implied instruction)
         wait = true;
     }
 
