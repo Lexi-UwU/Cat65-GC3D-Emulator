@@ -5,6 +5,6 @@ public class ArraySizeException extends RuntimeException {
         super(message);
     }
     public ArraySizeException(int expected, int received) {
-        this(String.format("Expected an Array of size %d, got one of size %d instead!", expected, received));
+        this("Expected an Array of size %d, got one of size %d instead!".formatted(expected, received));
     }
 }

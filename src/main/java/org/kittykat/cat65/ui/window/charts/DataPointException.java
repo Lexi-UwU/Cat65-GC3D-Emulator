@@ -5,6 +5,6 @@ public class DataPointException extends RuntimeException {
         super(message);
     }
     public DataPointException(int expectedCount, int receivedCount) {
-        this(String.format("Expected %d Data Point(s), got %d instead!", expectedCount, receivedCount));
+        this("Expected %d Data Point(s), got %d instead!".formatted(expectedCount, receivedCount));
     }
 }

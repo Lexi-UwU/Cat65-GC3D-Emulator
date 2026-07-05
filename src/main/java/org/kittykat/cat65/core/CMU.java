@@ -83,7 +83,7 @@ public abstract class CMU {
     private static boolean showDebug = false;
 
     public static GridPane makeWindow() {
-        GridPane window = EmuHelper.makeGrid(WINDOW_ROWS, WINDOW_COLS, HPos.CENTER);
+        GridPane window = EmuHelper.makeFreeGrid(WINDOW_ROWS, WINDOW_COLS, HPos.CENTER);
         window.add(config,  0, 0, 7, 1);
         window.add(lcd,       7, 0, 6, 1);
         window.add(cpu,      13, 0, 7, 1);

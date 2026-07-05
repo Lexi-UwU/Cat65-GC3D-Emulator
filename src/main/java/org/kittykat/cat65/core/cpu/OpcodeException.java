@@ -5,9 +5,9 @@ class OpcodeException extends RuntimeException {
         super(message);
     }
     public OpcodeException(int undefined) {
-        this(String.format("Undefined opcode! ($%02x)", undefined));
+        this("Undefined opcode! ($%02x)".formatted(undefined));
     }
     public OpcodeException(int duplicate, Opcode A, Opcode B) {
-        this(String.format("Duplicate opcode! ($%02x)\n%s\n%s", duplicate, A, B));
+        this("Duplicate opcode! ($%02x)\n%s\n%s".formatted(duplicate, A, B));
     }
 }

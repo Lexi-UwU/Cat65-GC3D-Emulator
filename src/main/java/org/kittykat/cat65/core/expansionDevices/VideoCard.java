@@ -284,8 +284,9 @@ public class VideoCard extends ExpansionDevice {
         Scene scene = new Scene(root);
         EmuHelper.applyCSS(scene);
 
-        window.setTitle("c7-VGA Video Card [$%x000] :3c".formatted(portNum));
+        window.setTitle("Vgc7 Video Card [$%x000] :3c".formatted(portNum));
         window.setScene(scene);
+        window.setResizable(false);
         window.setAlwaysOnTop(true);
     }
 }

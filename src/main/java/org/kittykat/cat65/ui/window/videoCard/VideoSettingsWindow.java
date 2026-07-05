@@ -10,6 +10,8 @@ public class VideoSettingsWindow extends Window {
     public boolean vSync = true;
 
     public VideoSettingsWindow() {
+        super();
+
         Label lbl_vSync = new Label("V-Sync:");
         CheckBox check_vSync = new CheckBox();
         check_vSync.setSelected(true);

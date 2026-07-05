@@ -62,8 +62,8 @@ public class ConfigWindow extends Window {
         GridPane controls = EmuHelper.makeGrid(2, 5, HPos.CENTER);
         controls.addRow(0, btn_load,  lbl_paused);
         controls.addRow(1, btn_reset, btn_pause, btn_instructionStep);
-        controls.add(btn_clearTerminal, 3, 0);
-        controls.add(btn_showDebug,     4, 0);
+        controls.add(btn_clearTerminal, 3, 0, 2, 1);
+        controls.add(btn_showDebug,     3, 1, 2, 1);
 
         Label lbl_newLineSetting = new Label("New Line Variant:");
         ComboBox<NewLineVariant> setting_newLine    = makeSetting(newLineVariant, NewLineVariant.class, NewLineVariant.stringConverter);

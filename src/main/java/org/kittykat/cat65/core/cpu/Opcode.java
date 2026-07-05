@@ -29,6 +29,6 @@ class Opcode {
 
     @Override
     public String toString() {
-        return String.format("%s : %s \"%s\" (%d)", method, input, args, cycles);
+        return "%s : %s \"%s\" (%d)".formatted(method, input, args, cycles);
     }
 }

@@ -375,7 +375,7 @@ public class CPU extends WindowWithTitle {
         statusText = new VBox(Cat65.SPACING);
         for (String statusName : STATUS_NAMES) {
             Label lbl_reg = new Label();
-            lbl_reg.setId(String.format("reg-%s", statusName));
+            lbl_reg.setId("reg-%s".formatted(statusName));
             lbl_reg.getStyleClass().add("CPU-reg");
             statusText.getChildren().add(lbl_reg);
         }
@@ -1124,10 +1124,14 @@ public class CPU extends WindowWithTitle {
                     case "MDR" -> CMU.getMDR();
                     default        -> 0x00;
                 };
-                boolean is16bit = regName.equals("PC");
-                label.setText(String.format(String.format("%%3s:  %%5d   |  %%s%%0%dx  |  %%s%%s  |  \"%%s\"", is16bit ? 4 : 2),
-                        regName, value, is16bit? "" : "  ", value, is16bit ? "" : "        ",
-                        EmuHelper.getBinary(value, is16bit), EmuHelper.getBinaryString(value, is16bit)));
+                if (regName.equals("PC")) {
+                    label.setText("%3s:  %5d  |  %04x  |  %s  |  \"%s\"".formatted(regName, value, value,
+                            EmuHelper.getBinary(value, true), EmuHelper.getAsciiString(value, true)));
+                } else {
+
+                    label.setText("%3s:  %5d  |    %02x  |          %s  |   \"%s\"".formatted(regName, value, value,
+                            EmuHelper.getBinary(value, false), EmuHelper.getAsciiString(value, false)));
+                }
             }
         }
     }

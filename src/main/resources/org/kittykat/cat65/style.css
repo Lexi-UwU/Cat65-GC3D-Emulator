@@ -1,5 +1,4 @@
 * {
-    -fx-font-family: "Consolas", monospace;
     -fx-text-fill: #ffffff;
     -fx-focus-traversable: false;
     -fx-background-radius: 0;
@@ -7,6 +6,7 @@
 }
 
 #root {
+    -fx-font-family: "Consolas", monospace;
     -fx-background-color: #101010;
     -fx-padding: 5px;
 }

@@ -1,6 +1,7 @@
 package org.kittykat.cat65;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -33,10 +34,10 @@ public abstract class EmuHelper {
 
     public static String getBinary(int value, boolean is16bit) {
         value &= 0xffff;
-        String bin = String.format("%16s", Integer.toBinaryString(value)).replaceAll(" ", "0");
+        String bin = "%16s".formatted(Integer.toBinaryString(value)).replaceAll(" ", "0");
         return bin.substring(is16bit ? 0 : 8, 16);
     }
-    public static String getBinaryString(int value, boolean is16bit) {
+    public static String getAsciiString(int value, boolean is16bit) {
         if (is16bit) {
             char cl = convertToASCII( value       & 0xff);
             char ch = convertToASCII((value >> 8) & 0xff);
@@ -82,27 +83,54 @@ public abstract class EmuHelper {
         return comboBox;
     }
 
-    public static GridPane makeGrid(int rows, int columns, HPos horizontalAlignment) {
+    public static GridPane makeGridBase() {
         GridPane grid = new GridPane(Cat65.SPACING, Cat65.SPACING);
         grid.getStyleClass().add("grid-pane");
         grid.setGridLinesVisible(false);
-        float rowPercent = 100f / rows;
-        for (int r = 0; r < rows; r++) {
-            RowConstraints row = new RowConstraints();
-            row.setVgrow(Priority.ALWAYS);
-            row.setFillHeight(true);
-            row.setPercentHeight(rowPercent);
-            grid.getRowConstraints().add(row);
-        }
+        return grid;
+    }
+    public static RowConstraints makeRowConstraint() {
+        RowConstraints row = new RowConstraints();
+        row.setVgrow(Priority.ALWAYS);
+        row.setFillHeight(true);
+        return row;
+    }
+    public static ColumnConstraints makeColumnConstraint(HPos horizontalAlignment) {
+        ColumnConstraints col = new ColumnConstraints();
+        col.setHgrow(Priority.ALWAYS);
+        col.setFillWidth(true);
+        col.setHalignment(horizontalAlignment);
+        return col;
+    }
+    public static void setupColumns(GridPane grid, int columns, HPos horizontalAlignment) {
+        ObservableList<ColumnConstraints> columnConstraints = grid.getColumnConstraints();
         float columnPercent = 100f / columns;
         for (int c = 0; c < columns; c++) {
-            ColumnConstraints col = new ColumnConstraints();
-            col.setHgrow(Priority.ALWAYS);
-            col.setFillWidth(true);
+            ColumnConstraints col = makeColumnConstraint(horizontalAlignment);
             col.setPercentWidth(columnPercent);
-            col.setHalignment(horizontalAlignment);
-            grid.getColumnConstraints().add(col);
+            columnConstraints.add(col);
         }
+    }
+    public static GridPane makeGrid(int rows, int columns, HPos horizontalAlignment) {
+        GridPane grid = makeGridBase();
+
+        ObservableList<RowConstraints> rowConstraints = grid.getRowConstraints();
+        float rowPercent = 100f / rows;
+        for (int r = 0; r < rows; r++) {
+            RowConstraints row = makeRowConstraint();
+            row.setPercentHeight(rowPercent);
+            rowConstraints.add(row);
+        }
+        setupColumns(grid, columns, horizontalAlignment);
+        return grid;
+    }
+    public static GridPane makeFreeGrid(int rows, int columns, HPos horizontalAlignment) {
+        GridPane grid = makeGridBase();
+
+        for (int r = 0; r < rows; r++) {
+            grid.getRowConstraints().add(makeRowConstraint());
+        }
+        setupColumns(grid, columns, horizontalAlignment);
         return grid;
     }
 
