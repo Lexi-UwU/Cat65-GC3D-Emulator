@@ -26,6 +26,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.concurrent.locks.LockSupport;
@@ -39,7 +40,8 @@ public abstract class CMU {
     private static final int WINDOW_ROWS = 4;
     private static final int WINDOW_COLS = 20;
 
-    private static final char[] ID_CHARS = {'c', '6', '5', 0x7a};
+    private static final int HEADER_SIZE = 16;
+    private static final char[] ID_CHARS = {'c', '6', '5', 0x15};
 
     private static final DebugWindow debugWindow = new DebugWindow();
 
@@ -59,11 +61,12 @@ public abstract class CMU {
     private static final ConfigWindow   config = new ConfigWindow();
     private static final SerialTerminal terminal = new SerialTerminal();
 
-    private static final byte[] rom = new byte[0x8000];
+    private static final int ROM_SIZE = 0x8000;
+    private static final byte[] rom = new byte[ROM_SIZE];
     private static final byte[] ram = new byte[0x4000];
 
-    private static ExpansionDevice exPort04 = new DisconnectedPort(4);
-    private static ExpansionDevice exPort07 = new DisconnectedPort(7);
+    private static volatile ExpansionDevice exPort04 = new DisconnectedPort(4);
+    private static volatile ExpansionDevice exPort07 = new DisconnectedPort(7);
     private static final ACIA acia = new ACIA();
     private static final VIA  via  = new VIA();
     private static final LCD  lcd  = new LCD();
@@ -382,28 +385,31 @@ public abstract class CMU {
             } else {
                 loadRaw(data);
             }
-
-            reset = true;
-            paused = p;
         } catch (Exception e) {
             System.err.println("[!] Could not open file...");
             e.printStackTrace();
+        } finally {
+            reset = true;
+            paused = p;
         }
     }
     private static void loadRaw(byte[] file) {
         System.out.println("[#] loading ROM");
-        if (file.length < 0x8000) {
+        if (file.length < ROM_SIZE) {
             System.err.println("[!] Warning! this ROM has a file size below 32KiB!");
-        } else if (file.length > 0x8000) {
-            System.err.println("[!] Warning! this ROM has more than 32KiB!");
+        } else if (file.length > ROM_SIZE) {
+            System.err.printf("[!] Warning! This ROM has %d unused bytes left over\n", file.length - ROM_SIZE);
         }
 
         for (int i = 0; i < rom.length; i++) {
             rom[i] = (i < file.length) ? file[i] : 0x00;
         }
     }
-    private static void loadC65(byte[] file) {
+    private static void loadC65(byte[] file) throws IOException {
         System.out.println("[#] loading .c65 file");
+        if (file.length < HEADER_SIZE) {
+            throw new IOException("A .c65 ROM needs to be at least %d bytes!".formatted(HEADER_SIZE));
+        }
         // 0x7 to 0xf are reserved for future use
 
         System.out.println("[*] loading Expansion...");
@@ -411,9 +417,14 @@ public abstract class CMU {
         config.exPort07.set(ExpansionPort.fromID(file[0x5]));
 
         System.out.println("[*] loading ROM...");
-        int index = 0x10;
+        if (file.length < (ROM_SIZE + HEADER_SIZE)) {
+            System.err.println("[!] Warning! this .c65 file has a ROM size below 32KiB!");
+        }
+
+        int index = HEADER_SIZE;
         for (int a = 0; a < rom.length; a++) {
-            rom[a] = file[index++];
+            rom[a] = (index < file.length) ? file[index] : 0x00;
+            index++;
         }
         index = ExpansionData.loadC65(file, index);
 
