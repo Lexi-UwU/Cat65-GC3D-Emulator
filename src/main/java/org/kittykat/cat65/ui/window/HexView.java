@@ -11,6 +11,9 @@ import javafx.scene.layout.VBox;
 import org.kittykat.cat65.EmuHelper;
 import org.kittykat.cat65.core.CMU;
 
+import java.util.Locale;
+import java.util.logging.Logger;
+
 public class HexView extends WindowWithTitle {
     private final ObservableList<String> lines = FXCollections.observableArrayList();
     private final ListView<String> hexView;
@@ -18,18 +21,27 @@ public class HexView extends WindowWithTitle {
     private static final double MAX_FONT_SIZE      = 12d;
     private static final double FONT_SIZE_CONSTANT = MAX_FONT_SIZE / 560d;
 
+    /*
+     * JavaFX logs a bogus
+     *   INFO: index exceeds maxCellCount. Check size calculations for class javafx.scene.control.skin.ListViewSkin$2
+     * whenever a ListView is scrolled to its very end and VirtualFlow has to pad
+     * the space below the last row with empty cells (this happens at window sizes
+     * where the last row doesn't end exactly at the viewport bottom).
+     * The sanity check in VirtualFlow.addTrailingCells compares the ABSOLUTE row
+     * index (up to 0x1000 here) against the viewport height in PIXELS, so any list
+     * with more rows than the viewport is pixels tall trips it. Known upstream bug
+     * (JDK-8140504, still present in current OpenJFX master), harmless and
+     * self-correcting - so we filter out exactly this one message.
+     * Kept as a static field because LogManager only holds weak refs to loggers.
+     */
+    private static final Logger CONTROLS_LOGGER = Logger.getLogger("javafx.scene.control");
+    static {
+        CONTROLS_LOGGER.setFilter(record ->
+                record.getMessage() == null || !record.getMessage().contains("index exceeds maxCellCount"));
+    }
+
     public HexView() {
         super("Hex Viewer [CPU Memory]");
-
-        /*
-         * I tried to get this weird warning/error that shows up to go away
-         * idk what even causes it tbh
-         * for now I'll just leave it cuz it's not a major issue
-         *
-         * INFO: index exceeds maxCellCount. Check size calculations for class javafx.scene.control.skin.ListViewSkin$2
-         *
-         * this is why I hate front-end/UI code
-         */
 
         hexView = new ListView<>(lines);
         hexView.setCache(true);
@@ -47,7 +59,9 @@ public class HexView extends WindowWithTitle {
 
     private void updateFontSize(double width) {
         double newSize = Math.min(MAX_FONT_SIZE, width * FONT_SIZE_CONSTANT);
-        hexView.setStyle("-fx-font-size: %.3f;".formatted(newSize));
+        // Locale.ROOT: on decimal-comma locales (e.g. de-DE) "%.3f" yields "6,566"
+        // and the CSS parser silently drops everything after the comma
+        hexView.setStyle(String.format(Locale.ROOT, "-fx-font-size: %.3f;", newSize));
     }
 
     public String getVisualizerLine(int lineNum) {
