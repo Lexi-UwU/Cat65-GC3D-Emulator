@@ -22,7 +22,9 @@ public abstract class ExpansionDevice extends ExtraChip {
         return switch (device) {
             case _2A05 -> new AudioCard(port);
             case _Vgc7 -> new VideoCard(port);
+            case _Gc3d -> new GraphicsCard(port);
             case _Disconnected -> new DisconnectedPort(port);
+
         };
     }
 

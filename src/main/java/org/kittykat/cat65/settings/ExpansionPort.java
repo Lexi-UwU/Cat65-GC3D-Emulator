@@ -5,7 +5,8 @@ import javafx.util.StringConverter;
 public enum ExpansionPort {
     _Disconnected,
     _2A05,
-    _Vgc7;
+    _Vgc7,
+    _Gc3d;
 
     public static final StringConverter<ExpansionPort> stringConverter = new StringConverter<>() {
         @Override
