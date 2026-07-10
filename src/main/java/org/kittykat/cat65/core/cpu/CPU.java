@@ -653,7 +653,7 @@ public class CPU {
             int d1 = EmuHelper.fromBCD(v1);
             int d2 = EmuHelper.fromBCD(c.input);
             int r = d1 + d2 + carry;
-            A = EmuHelper.toBCD(r % 100) & 0xff;
+            A = EmuHelper.toBCD(Math.floorMod(100 + r, 100)) & 0xff;
             writeFlag('C', r > 99);
             
             cycles++;  // on the 65c02 BCD math takes an extra cycle
