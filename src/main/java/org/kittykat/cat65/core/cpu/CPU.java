@@ -29,21 +29,21 @@ public class CPU {
                     new OpcodeDef(this::value_zpInd, 5, new int[]{0x32}, null),
             }),
             new OpcodeType(this::ASL, new OpcodeDef[] {
-                    new OpcodeDef(null,         2, new int[]{0x0a}, null),
+                    new OpcodeDef(this::implied,      2, new int[]{0x0a}, "A"),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x06}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x16}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x0e}, null),
                     new OpcodeDef(this::address_absX, 6, new int[]{0x1e}, null),
             }),
             new OpcodeType(this::B__, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0x10}, "NC"),  // BPL
-                    new OpcodeDef(null, 2, new int[]{0x30}, "NS"),  // BMI
-                    new OpcodeDef(null, 2, new int[]{0x50}, "VC"),  // BVC
-                    new OpcodeDef(null, 2, new int[]{0x70}, "VS"),  // BVS
-                    new OpcodeDef(null, 2, new int[]{0x90}, "CC"),  // BCC
-                    new OpcodeDef(null, 2, new int[]{0xb0}, "CS"),  // BCS
-                    new OpcodeDef(null, 2, new int[]{0xd0}, "ZC"),  // BNE
-                    new OpcodeDef(null, 2, new int[]{0xf0}, "ZS"),  // BEQ
+                    new OpcodeDef(this::implied, 2, new int[]{0x10}, "NC"),  // BPL
+                    new OpcodeDef(this::implied, 2, new int[]{0x30}, "NS"),  // BMI
+                    new OpcodeDef(this::implied, 2, new int[]{0x50}, "VC"),  // BVC
+                    new OpcodeDef(this::implied, 2, new int[]{0x70}, "VS"),  // BVS
+                    new OpcodeDef(this::implied, 2, new int[]{0x90}, "CC"),  // BCC
+                    new OpcodeDef(this::implied, 2, new int[]{0xb0}, "CS"),  // BCS
+                    new OpcodeDef(this::implied, 2, new int[]{0xd0}, "ZC"),  // BNE
+                    new OpcodeDef(this::implied, 2, new int[]{0xf0}, "ZS"),  // BEQ
             }),
             new OpcodeType(this::BIT, new OpcodeDef[] {
                     new OpcodeDef(this::value_zp,  3, new int[]{0x24}, null),
@@ -54,7 +54,13 @@ public class CPU {
                     new OpcodeDef(this::value_zpX,  4, new int[]{0x34}, null),
             }),
             new OpcodeType(this::BRK, new OpcodeDef[] {
-                    new OpcodeDef(null, 7, new int[]{0x00}, null),
+                    new OpcodeDef(this::implied, 7, new int[]{0x00}, null),
+            }),
+            new OpcodeType(this::CL_, new OpcodeDef[] {
+                    new OpcodeDef(this::implied, 2, new int[]{0x18}, "C"),  // CLC
+                    new OpcodeDef(this::implied, 2, new int[]{0x58}, "I"),  // CLI
+                    new OpcodeDef(this::implied, 2, new int[]{0xb8}, "V"),  // CLV
+                    new OpcodeDef(this::implied, 2, new int[]{0xd8}, "D"),  // CLD
             }),
             new OpcodeType(this::CMP, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xc9}, null),
@@ -85,13 +91,13 @@ public class CPU {
                     new OpcodeDef(this::address_absX_fixed, 7, new int[]{0xde}, null),
                     // for some reason DEC abs,x isn't like the other RMW instructions and has a fixed cycle count
 
-                    new OpcodeDef(null, 2, new int[]{0x3a}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0x3a}, "A"),
             }),
             new OpcodeType(this::DEX, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0xca}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0xca}, null),
             }),
             new OpcodeType(this::DEY, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0x88}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0x88}, null),
             }),
             new OpcodeType(this::EOR, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0x49}, null),
@@ -105,17 +111,6 @@ public class CPU {
 
                     new OpcodeDef(this::value_zpInd, 5, new int[]{0x52}, null),
             }),
-            new OpcodeType(this::SE_, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0x38}, "C"),  // SEC
-                    new OpcodeDef(null, 2, new int[]{0x78}, "I"),  // SEI
-                    new OpcodeDef(null, 2, new int[]{0xf8}, "D"),  // SED
-            }),
-            new OpcodeType(this::CL_, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0x18}, "C"),  // CLC
-                    new OpcodeDef(null, 2, new int[]{0x58}, "I"),  // CLI
-                    new OpcodeDef(null, 2, new int[]{0xb8}, "V"),  // CLV
-                    new OpcodeDef(null, 2, new int[]{0xd8}, "D"),  // CLD
-            }),
             new OpcodeType(this::INC, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,         5, new int[]{0xe6}, null),
                     new OpcodeDef(this::address_zpX,        6, new int[]{0xf6}, null),
@@ -123,13 +118,13 @@ public class CPU {
                     new OpcodeDef(this::address_absX_fixed, 7, new int[]{0xfe}, null),
                     // for some reason INC abs,x isn't like the other RMW instructions and has a fixed cycle count
 
-                    new OpcodeDef(null, 2, new int[]{0x1a}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0x1a}, "A"),
             }),
             new OpcodeType(this::INX, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0xe8}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0xe8}, null),
             }),
             new OpcodeType(this::INY, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0xc8}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0xc8}, null),
             }),
             new OpcodeType(this::JMP, new OpcodeDef[] {
                     new OpcodeDef(this::address_abs, 3, new int[]{0x4c}, null),
@@ -167,18 +162,18 @@ public class CPU {
                     new OpcodeDef(this::value_absX, 4, new int[]{0xbc}, null),
             }),
             new OpcodeType(this::LSR, new OpcodeDef[] {
-                    new OpcodeDef(null,         2, new int[]{0x4a}, null),
+                    new OpcodeDef(this::implied,      2, new int[]{0x4a}, "A"),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x46}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x56}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x4e}, null),
                     new OpcodeDef(this::address_absX, 6, new int[]{0x5e}, null),
             }),
             new OpcodeType(this::NOP, new OpcodeDef[] {
-                    new OpcodeDef(null,     1, new int[]{0x03, 0x13, 0x23, 0x33, 0x43, 0x53, 0x63, 0x73,
-                                                                        0x83, 0x93, 0xa3, 0xb3, 0xc3, 0xd3, 0xe3, 0xf3,
-                                                                        0x0b, 0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b,
-                                                                        0x8b, 0x9b, 0xab, 0xbb, 0xeb, 0xfb}, "-"),
-                    new OpcodeDef(null,     2, new int[]{0xea}, "-"),
+                    new OpcodeDef(this::implied,  1, new int[]{0x03, 0x13, 0x23, 0x33, 0x43, 0x53, 0x63, 0x73,
+                                                                      0x83, 0x93, 0xa3, 0xb3, 0xc3, 0xd3, 0xe3, 0xf3,
+                                                                      0x0b, 0x1b, 0x2b, 0x3b, 0x4b, 0x5b, 0x6b, 0x7b,
+                                                                      0x8b, 0x9b, 0xab, 0xbb, 0xeb, 0xfb}, null),
+                    new OpcodeDef(this::implied,  2, new int[]{0xea}, null),
                     new OpcodeDef(this::nextByte, 2, new int[]{0x02, 0x22, 0x42, 0x62, 0x82, 0xc2, 0xe2}, null),
                     new OpcodeDef(this::nextByte, 3, new int[]{0x44}, null),
                     new OpcodeDef(this::nextByte, 4, new int[]{0x54, 0xd4, 0xf4}, null),
@@ -198,46 +193,38 @@ public class CPU {
                     new OpcodeDef(this::value_zpInd, 5, new int[]{0x12}, null),
             }),
             new OpcodeType(this::PH_, new OpcodeDef[] {
-                    new OpcodeDef(null, 3, new int[]{0x48}, "A"),  // PHA
-                    new OpcodeDef(null, 3, new int[]{0x08}, "P"),  // PHP
+                    new OpcodeDef(this::implied, 3, new int[]{0x48}, "A"),  // PHA
+                    new OpcodeDef(this::implied, 3, new int[]{0x08}, "P"),  // PHP
 
-                    new OpcodeDef(null, 3, new int[]{0xda}, "X"),  // PHX
-                    new OpcodeDef(null, 3, new int[]{0x5a}, "Y"),  // PHY
+                    new OpcodeDef(this::implied, 3, new int[]{0xda}, "X"),  // PHX
+                    new OpcodeDef(this::implied, 3, new int[]{0x5a}, "Y"),  // PHY
             }),
             new OpcodeType(this::PL_, new OpcodeDef[] {
-                    new OpcodeDef(null, 4, new int[]{0x68}, "A"),  // PLA
-                    new OpcodeDef(null, 4, new int[]{0x28}, "P"),  // PLP
+                    new OpcodeDef(this::implied, 4, new int[]{0x68}, "A"),  // PLA
+                    new OpcodeDef(this::implied, 4, new int[]{0x28}, "P"),  // PLP
 
-                    new OpcodeDef(null, 4, new int[]{0xfa}, "X"),  // PLX
-                    new OpcodeDef(null, 4, new int[]{0x7a}, "Y"),  // PLY
-            }),
-            new OpcodeType(this::T__, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0xaa}, "AX"),  // TAX
-                    new OpcodeDef(null, 2, new int[]{0x8a}, "XA"),  // TXA
-                    new OpcodeDef(null, 2, new int[]{0xa8}, "AY"),  // TAY
-                    new OpcodeDef(null, 2, new int[]{0x98}, "YA"),  // TYA
-                    new OpcodeDef(null, 2, new int[]{0x9a}, "XS"),  // TXS
-                    new OpcodeDef(null, 2, new int[]{0xba}, "SX"),  // TSX
+                    new OpcodeDef(this::implied, 4, new int[]{0xfa}, "X"),  // PLX
+                    new OpcodeDef(this::implied, 4, new int[]{0x7a}, "Y"),  // PLY
             }),
             new OpcodeType(this::ROL, new OpcodeDef[] {
-                    new OpcodeDef(null,         2, new int[]{0x2a}, null),
+                    new OpcodeDef(this::implied,      2, new int[]{0x2a}, "A"),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x26}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x36}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x2e}, null),
                     new OpcodeDef(this::address_absX, 6, new int[]{0x3e}, null),
             }),
             new OpcodeType(this::ROR, new OpcodeDef[] {
-                    new OpcodeDef(null,         2, new int[]{0x6a}, null),
+                    new OpcodeDef(this::implied,      2, new int[]{0x6a}, "A"),
                     new OpcodeDef(this::address_zp,   5, new int[]{0x66}, null),
                     new OpcodeDef(this::address_zpX,  6, new int[]{0x76}, null),
                     new OpcodeDef(this::address_abs,  6, new int[]{0x6e}, null),
                     new OpcodeDef(this::address_absX, 6, new int[]{0x7e}, null),
             }),
             new OpcodeType(this::RTI, new OpcodeDef[] {
-                    new OpcodeDef(null, 6, new int[]{0x40}, null),
+                    new OpcodeDef(this::implied, 6, new int[]{0x40}, null),
             }),
             new OpcodeType(this::RTS, new OpcodeDef[] {
-                    new OpcodeDef(null, 6, new int[]{0x60}, null),
+                    new OpcodeDef(this::implied, 6, new int[]{0x60}, null),
             }),
             new OpcodeType(this::SBC, new OpcodeDef[] {
                     new OpcodeDef(this::value_imm,  2, new int[]{0xe9}, null),
@@ -250,6 +237,11 @@ public class CPU {
                     new OpcodeDef(this::value_indY, 5, new int[]{0xf1}, null),
 
                     new OpcodeDef(this::value_zpInd, 5, new int[]{0xf2}, null),
+            }),
+            new OpcodeType(this::SE_, new OpcodeDef[] {
+                    new OpcodeDef(this::implied, 2, new int[]{0x38}, "C"),  // SEC
+                    new OpcodeDef(this::implied, 2, new int[]{0x78}, "I"),  // SEI
+                    new OpcodeDef(this::implied, 2, new int[]{0xf8}, "D"),  // SED
             }),
             new OpcodeType(this::STA, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp,         3, new int[]{0x85}, null),
@@ -271,6 +263,14 @@ public class CPU {
                     new OpcodeDef(this::address_zp,  3, new int[]{0x84}, null),
                     new OpcodeDef(this::address_zpX, 4, new int[]{0x94}, null),
                     new OpcodeDef(this::address_abs, 4, new int[]{0x8c}, null),
+            }),
+            new OpcodeType(this::T__, new OpcodeDef[] {
+                    new OpcodeDef(this::implied, 2, new int[]{0xaa}, "AX"),  // TAX
+                    new OpcodeDef(this::implied, 2, new int[]{0x8a}, "XA"),  // TXA
+                    new OpcodeDef(this::implied, 2, new int[]{0xa8}, "AY"),  // TAY
+                    new OpcodeDef(this::implied, 2, new int[]{0x98}, "YA"),  // TYA
+                    new OpcodeDef(this::implied, 2, new int[]{0x9a}, "XS"),  // TXS
+                    new OpcodeDef(this::implied, 2, new int[]{0xba}, "SX"),  // TSX
             }),
 
             // 65c02 exclusive instructions
@@ -295,7 +295,7 @@ public class CPU {
                     new OpcodeDef(this::value_zp, 5, new int[]{0xff}, "7"),
             }),
             new OpcodeType(this::BRA, new OpcodeDef[] {
-                    new OpcodeDef(null, 2, new int[]{0x80}, null),
+                    new OpcodeDef(this::implied, 2, new int[]{0x80}, null),
             }),
             new OpcodeType(this::RMB_, new OpcodeDef[] {
                     new OpcodeDef(this::address_zp, 5, new int[]{0x07}, "0"),
@@ -318,7 +318,7 @@ public class CPU {
                     new OpcodeDef(this::address_zp, 5, new int[]{0xf7}, "7"),
             }),
             new OpcodeType(this::STP, new OpcodeDef[] {
-                    new OpcodeDef(null, 3, new int[]{0xdb}, null),
+                    new OpcodeDef(this::implied, 3, new int[]{0xdb}, null),
             }),
             new OpcodeType(this::STZ, new OpcodeDef[]{
                     new OpcodeDef(this::address_zp,         3, new int[]{0x64}, null),
@@ -335,12 +335,12 @@ public class CPU {
                     new OpcodeDef(this::address_abs,  6, new int[]{0x0c}, null),
             }),
             new OpcodeType(this::WAI, new OpcodeDef[] {
-                    new OpcodeDef(null, 3, new int[]{0xcb}, null),
+                    new OpcodeDef(this::implied, 3, new int[]{0xcb}, null),
             }),
     };
     private final Opcode[] opcodes = new Opcode[0x100];
 
-    private static final int[] INTERRUPT_ADDRESSES = {
+    public static final int[] VECTOR_ADDRESSES = {
             0xfffc,  // Reset
             0xfffa,  // NMI
             0xfffe,  // IRQ/BRK
@@ -428,12 +428,9 @@ public class CPU {
         nextByte();  // dummy read from BRK
 
         // suppressed stack writes (converted to reads)
-        read(0x0100 | S);
-        S = (S - 1) & 0xff;
-        read(0x0100 | S);
-        S = (S - 1) & 0xff;
-        read(0x0100 | S);
-        S = (S - 1) & 0xff;
+        suppressedStackPush();  // PC high byte
+        suppressedStackPush();  // PC low byte
+        suppressedStackPush();  // status register
 
         // Status Flags get reset too
         P = (P & 0b1100_0011) | 0b0000_0100;
@@ -488,24 +485,34 @@ public class CPU {
         bus.write(address, value);
     }
 
+    private void incStackPtr() {
+        S = (S + 1) & 0xff;
+    }
+    private void decStackPtr() {
+        S = (S - 1) & 0xff;
+    }
+    private void suppressedStackPush() {
+        read(0x0100 | S);
+        decStackPtr();
+    }
     private void stackPush(int v) {
         write(0x0100 | S, v);
-        S = (S - 1) & 0xff;
+        decStackPtr();
     }
     private void stackPushWord(int v) {
         stackPush(v >> 8);
         stackPush(v & 0x00ff);
     }
     private int stackPull() {
-        S = (S + 1) & 0xff;
+        incStackPtr();
         return read(0x0100 | S);
     }
     private int stackPullWord() {
         return stackPull() | (stackPull() << 8);
     }
 
-    private void dummyRead() {
-        read(PC);
+    private int dummyRead() {
+        return read(PC);
     }
     private int nextByte() {
         int v = read(PC);
@@ -518,18 +525,26 @@ public class CPU {
         return ((high << 8) | low);
     }
     private int vectorAddress(int i) {
-        int low  = read(INTERRUPT_ADDRESSES[i]);
-        int high = read(INTERRUPT_ADDRESSES[i] + 1);
+        int low  = read(VECTOR_ADDRESSES[i]);
+        int high = read(VECTOR_ADDRESSES[i] + 1);
         return ((high << 8) | low);
     }
     private int indexedAddress(int address, int i, boolean fixedCycles) {
-        int a = address + i;
-        if ((address & 0xff00) != (a & 0xff00)) {  // check if a page-boundary is crossed
-            // it first reads the byte at the address with the correct low-byte but incorrect high-byte before fixing the high-byte
-            read((address & 0xff00) | (a & 0x00ff));
-            if (!fixedCycles) cycles++;
+        int a = (address + i) & 0xffff;
+
+        boolean pageCrossed = (address & 0xff00) != (a & 0xff00);  // check if a page-boundary is crossed
+        if (pageCrossed || fixedCycles) {  // the dummy read also happens on instructions that always have this extra cycle
+            // on the 65c02, indexed addressing across a page boundary causes it to read
+            // the last instruction byte again instead of reading from an invalid address
+            read((PC - 1) & 0xffff);
         }
-        return a & 0xffff;
+        if (pageCrossed && !fixedCycles) cycles++;
+
+        return a;
+    }
+
+    private int implied() {
+        return dummyRead();  // dummy read (implied instruction)
     }
 
     private int address_zp() {
@@ -567,9 +582,8 @@ public class CPU {
         return indexedAddress(nextWord(), Y, true);
     }
     private int address_ind() {
-        int i = nextWord();
-        int j = (i + 1) & 0xffff;
-        return (read(i) | (read(j) << 8));
+        int a = nextWord();
+        return (read(a) | (read((a + 1) & 0xffff) << 8));
     }
     private int address_xInd() {
         int a = (nextByte() + X) & 0xff;
@@ -670,11 +684,11 @@ public class CPU {
     }
     private void ASL(OpcodeContext c) {
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             v = read(c.input) << 1;
+            read(c.input);  // RMW dummy read
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             v = A << 1;
             A = v & 0xff;
         }
@@ -683,7 +697,7 @@ public class CPU {
     }
     private void B__(OpcodeContext c) {
         // branch instructions
-        int d = value_imm();
+        int d = nextByte();
         if (getFlag(c.args.charAt(0)) == (c.args.charAt(1) == 'S')) branch(d);
     }
     private void BIT(OpcodeContext c) {
@@ -695,7 +709,7 @@ public class CPU {
         }
     }
     private void BRK(OpcodeContext c) {
-        nextByte();  // dummy read (implied instruction)
+        nextByte();  // BRK padding byte
 
         stackPushWord(PC);
         stackPush(P | 0b0011_0000);  // bit 5 and the B flag both get pushed as 1 by BRK
@@ -707,8 +721,6 @@ public class CPU {
         PC = vectorAddress(2);
     }
     private void CL_(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-        
         // clear flag instructions
         clearFlag(c.args.charAt(0));
     }
@@ -723,24 +735,20 @@ public class CPU {
     }
     private void DEC(OpcodeContext c) {
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             v = (read(c.input) - 1) & 0xff;
+            read(c.input);  // RMW dummy read
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             A = v = (A - 1) & 0xff;
         }
         flagsZN(v);
     }
     private void DEX(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         X = (X - 1) & 0xff;
         flagsZN(X);
     }
     private void DEY(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         Y = (Y - 1) & 0xff;
         flagsZN(Y);
     }
@@ -750,24 +758,20 @@ public class CPU {
     }
     private void INC(OpcodeContext c) {
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             v = (read(c.input) + 1) & 0xff;
+            read(c.input);  // RMW dummy read
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             A = v = (A + 1) & 0xff;
         }
         flagsZN(v);
     }
     private void INX(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         X = (X + 1) & 0xff;
         flagsZN(X);
     }
     private void INY(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         Y = (Y + 1) & 0xff;
         flagsZN(Y);
     }
@@ -792,13 +796,13 @@ public class CPU {
     }
     private void LSR(OpcodeContext c) {
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             v = read(c.input);
+            read(c.input);  // RMW dummy read
             writeFlag('C', (v & 0x01) != 0);
             v >>= 1;
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             writeFlag('C', (A & 0x01) != 0);
             A >>= 1;
             v = A;
@@ -806,10 +810,6 @@ public class CPU {
         flagsZN(v);
     }
     private void NOP(OpcodeContext c) {
-        if (c.args != null) {
-            dummyRead();  // dummy read (implied instruction)
-        }
-
         // wow :3c
         // such empty >w<
     }
@@ -818,8 +818,6 @@ public class CPU {
         flagsZN(A);
     }
     private void PH_(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         // stack push instructions
         char r = c.args.charAt(0);
         switch (r) {
@@ -830,8 +828,6 @@ public class CPU {
         }
     }
     private void PL_(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         // stack pull instructions
         char r = c.args.charAt(0);
         switch (r) {
@@ -851,8 +847,6 @@ public class CPU {
         }
     }
     private void T__(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         // register transfer instructions
         char s = c.args.charAt(0);
         char d = c.args.charAt(1);
@@ -877,12 +871,12 @@ public class CPU {
         int carry = (getFlag('C') ? 0x01 : 0x00);
         int o;
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             o = read(c.input);
+            read(c.input);  // RMW dummy read
             v = ((o << 1) | carry) & 0xff;
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             o = A;
             A = v = ((o << 1) | carry) & 0xff;
         }
@@ -893,12 +887,12 @@ public class CPU {
         int carry = (getFlag('C') ? 0x80 : 0x00);
         int o;
         int v;
-        if (c.hasInput) {
+        if (c.args == null) {
             o = read(c.input);
+            read(c.input);  // RMW dummy read
             v = ((o >> 1) | carry) & 0xff;
             write(c.input, v);
         } else {
-            dummyRead();  // dummy read (implied instruction)
             o = A;
             A = v = ((o >> 1) | carry) & 0xff;
         }
@@ -906,19 +900,13 @@ public class CPU {
         flagsZN(v);
     }
     private void RTI(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         P  = (stackPull() & 0b1100_1111);  // bit 5 and the B flag get ignored by RTI
         PC = stackPullWord();
     }
     private void RTS(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         PC = (stackPullWord() + 1) & 0xffff;
     }
     private void SE_(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
-
         // set flag instructions
         setFlag(c.args.charAt(0));
     }
@@ -962,7 +950,7 @@ public class CPU {
         if (bitBranchValue(c.input, c)) branch(d);
     }
     private void BRA(OpcodeContext c) {
-        branch(value_imm());
+        branch(nextByte());
     }
     private void RMB_(OpcodeContext c) {
         // reset-memory-bit instructions
@@ -977,7 +965,6 @@ public class CPU {
         write(c.input, v);
     }
     private void STP(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
         stop = true;
     }
     private void STZ(OpcodeContext c) {
@@ -994,7 +981,6 @@ public class CPU {
         write(c.input, A | v);
     }
     private void WAI(OpcodeContext c) {
-        dummyRead();  // dummy read (implied instruction)
         wait = true;
     }
 
@@ -1002,7 +988,7 @@ public class CPU {
     private void ALR(OpcodeContext c) {  // (ASR)
         AND(c);
         // to effectively LSR A
-        c.hasInput = false;
+        c.args = "A";
         LSR(c);
     }
     private void ANC(OpcodeContext c) {  // (AAC)
@@ -1016,7 +1002,7 @@ public class CPU {
     private void ARR(OpcodeContext c) {
         AND(c);
         // to effectively ROR A
-        c.hasInput = false;
+        c.args = "A";
         ROR(c);
         boolean b = (A & 0x40) != 0;
         writeFlag('C', b);
@@ -1155,12 +1141,6 @@ public class CPU {
     }
 
     public boolean isAtInstructionBoundary() {
-        return cycles <= 0;
-    }
-    public boolean isWaiting() {
-        return wait;
-    }
-    public boolean isStopped() {
-        return stop;
+        return (cycles <= 0);
     }
 }
